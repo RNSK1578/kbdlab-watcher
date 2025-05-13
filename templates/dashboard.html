@@ -53,9 +53,7 @@
             {% for post in status.posts %}
               <tr>
                 <td>{{ loop.index }}</td>
-                <td><a href="{{ post.url }}" target="_blank" style="color:#4facff">
-                      {{ post.title }}
-                    </a></td>
+                <td><a href="{{ post.url }}" target="_blank" style="color:#4facff">{{ post.title }}</a></td>
               </tr>
             {% endfor %}
           {% else %}
