@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <title>키보드LAB 장터 모니터</title>
+  <!-- 60초마다 페이지 자동 새로고침 -->
+  <meta http-equiv="refresh" content="60">
   <style>
     body{background:#1e1e2f;color:#e0e0e0;font-family:sans-serif}
     .container{width:90%;margin:2rem auto}
@@ -21,14 +23,14 @@
 
     <div class="card">
       <h2>모니터 상태</h2>
-      <p>현재 상태: 
+      <p>현재 상태:
         {% if status.running %}
           <strong style="color:#4caf50">실행 중</strong>
         {% else %}
           <strong style="color:#f44336">중지됨</strong>
         {% endif %}
       </p>
-      <p>마지막 확인: 
+      <p>마지막 확인:
         {% if status.last_check %}
           {{ status.last_check|int|datetimeformat }}
         {% else %}
