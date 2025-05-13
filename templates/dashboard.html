@@ -2,44 +2,30 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8"/>
-  <title>게시판 모니터 대시보드</title>
+  <title>키보드LAB 장터 모니터</title>
   <style>
     body{background:#1e1e2f;color:#e0e0e0;font-family:sans-serif}
     .container{width:90%;margin:2rem auto}
     .card{background:#2a2a3f;padding:1rem;border-radius:8px;margin-bottom:1rem}
-    .btn{display:inline-block;padding:.5rem 1rem;margin:.2rem;
-         background:#3a3aff;color:#fff;text-decoration:none;border-radius:4px}
+    .btn{display:inline-block;padding:.5rem 1rem;margin:.2rem;background:#3a3aff;color:#fff;text-decoration:none;border-radius:4px}
     .btn.red{background:#ff4a4a}
     table{width:100%;border-collapse:collapse}
     th,td{padding:.5rem;border-bottom:1px solid #444}
     th{background:#30304f}
-    .alert{padding:.5rem;margin-bottom:1rem;border-radius:4px}
-    .error{background:#f44336}
-    .success{background:#4caf50}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>키보드LAB 장터 감시기</h1>
 
-    <!-- 알림 메시지 -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, msg in messages %}
-          <div class="alert {{ category }}">{{ msg }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <h1>키보드LAB 장터 모니터</h1>
 
     <div class="card">
       <h2>모니터 상태</h2>
-      <!-- BOARD_URL 대신 고정 텍스트 사용 -->
-      <p>감시 게시판: <strong>https://kbdlab.co.kr/index.php?mid=board_wUWl20</strong></p>
       <p>현재 상태: 
         {% if status.running %}
-          <span style="color:#4caf50">실행 중</span>
+          <strong style="color:#4caf50">실행 중</strong>
         {% else %}
-          <span style="color:red">중지됨</span>
+          <strong style="color:#f44336">중지됨</strong>
         {% endif %}
       </p>
       <p>마지막 확인: 
@@ -49,35 +35,22 @@
           아직 없음
         {% endif %}
       </p>
-      <p>다음 자동 로그인 시간: 
-        {% if status.next_relogin %}
-          {{ status.next_relogin|int|datetimeformat }}
-        {% else %}
-          대기 중
-        {% endif %}
-      </p>
-      <a href="/시작" class="btn">시작</a>
-      <a href="/중지" class="btn red">중지</a>
-      <a href="/새로고침" class="btn">새로고침</a>
-      <a href="/설정" class="btn">설정</a>
+      <a href="{{ url_for('start') }}"   class="btn">시작</a>
+      <a href="{{ url_for('stop') }}"    class="btn red">중지</a>
+      <a href="{{ url_for('refresh') }}" class="btn">새로고침</a>
+      <a href="{{ url_for('settings') }}"class="btn">설정</a>
     </div>
 
     <div class="card">
       <h2>최신 글 목록</h2>
       <table>
-        <thead>
-          <tr><th>순번</th><th>제목</th></tr>
-        </thead>
+        <thead><tr><th>순번</th><th>제목</th></tr></thead>
         <tbody>
           {% if status.posts %}
             {% for post in status.posts %}
               <tr>
                 <td>{{ loop.index }}</td>
-                <td>
-                  <a href="{{ post.url }}" target="_blank" style="color:#4facff">
-                    {{ post.title }}
-                  </a>
-                </td>
+                <td><a href="{{ post.url }}" target="_blank" style="color:#4facff">{{ post.title }}</a></td>
               </tr>
             {% endfor %}
           {% else %}
@@ -86,6 +59,7 @@
         </tbody>
       </table>
     </div>
+
   </div>
 </body>
 </html>
