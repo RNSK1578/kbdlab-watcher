@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from flask import Flask, request, render_template, redirect, url_for
 from datetime import datetime
 
-# ── 설정 파일 로드/초기화 ───────────────────────────
+# 설정 파일 초기화 및 로드
 CONFIG_FILE = 'config.json'
 if not os.path.exists(CONFIG_FILE):
     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -16,17 +16,17 @@ if not os.path.exists(CONFIG_FILE):
 with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
     config = json.load(f)
 
-# ── Flask 앱 설정 ──────────────────────────────────
+# Flask 앱 설정
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# ── URL 및 헤더 정의 ───────────────────────────────
+# URL 및 헤더 정의
 LOGIN_FORM_URL = "https://kbdlab.co.kr/index.php?mid=board_wUWl20&act=dispOknameLoginForm"
 LOGIN_PROC_URL = "https://kbdlab.co.kr/index.php?act=procMemberLogin"
 BOARD_URL      = "https://kbdlab.co.kr/index.php?mid=board_wUWl20&page=1&sort_index=regdate&order_type=desc"
 HEADERS        = {'User-Agent':'Mozilla/5.0'}
 
-# ── 전역 상태 변수 ─────────────────────────────────
+# 전역 상태 변수
 session = requests.Session()
 latest_hash = None
 status = {
@@ -36,12 +36,12 @@ status = {
     'posts': []
 }
 
-# ── Jinja 필터: timestamp → 한글 날짜 형식 ───────────
+# Jinja 필터: timestamp → 한글 날짜 형식
 @app.template_filter('datetimeformat')
 def _datetimeformat(ts):
     return datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S') if ts else ''
 
-# ── 로그인 함수 ────────────────────────────────────
+# 로그인 함수
 def do_login():
     data = {
         'user_id': config['username'],
@@ -50,7 +50,6 @@ def do_login():
         'act': 'procMemberLogin',
         'success_return_url': '/index.php?mid=board_wUWl20'
     }
-    # 폼 로드(쿠키 수집)
     session.get(LOGIN_FORM_URL, headers=HEADERS)
     r = session.post(LOGIN_PROC_URL, data=data, headers=HEADERS)
     if r.status_code == 200 and 'dispMemberLogout' in r.text:
@@ -59,34 +58,32 @@ def do_login():
     else:
         print("❌ 로그인 실패")
 
-# ── 크롤링 루프 ────────────────────────────────────
+# 크롤링 루프
 def crawl_loop():
     global latest_hash
     status['running'] = True
     while status['running']:
         try:
-            # 자동 재로그인
+            # 재로그인
             if status['next_relogin'] and time.time() >= status['next_relogin']:
                 do_login()
             # 게시판 요청
             r = session.get(BOARD_URL, headers=HEADERS)
             soup = BeautifulSoup(r.text, 'html.parser')
-            rows = soup.select('table.bd_lst tbody tr')
+            # 최신 글이 먼저 오도록 정확한 셀렉터 사용
+            rows = soup.select('table.bd_lst.bd_tb_lst.bd_tb tbody tr')
             posts = []
             for row in rows:
-                if 'notice' in row.get('class', []):
-                    continue
+                if 'notice' in row.get('class', []): continue
                 a = row.select_one('td.title a')
-                if not a:
-                    continue
+                if not a: continue
                 title = a.get_text(strip=True)
                 href  = a['href']
                 url   = href if href.startswith('http') else 'https://kbdlab.co.kr' + href
                 posts.append({'title': title, 'url': url})
             status['posts'] = posts[:5]
             status['last_check'] = time.time()
-
-            # 신규글 디스코드 알림
+            # 신규글 알림
             if posts and config['webhook_url']:
                 h = hashlib.sha256(posts[0]['url'].encode()).hexdigest()
                 if h != latest_hash:
@@ -101,7 +98,7 @@ def crawl_loop():
         time.sleep(60)
     print("🔒 크롤링 중지")
 
-# ── 라우트 정의 ────────────────────────────────────
+# 라우트 정의
 @app.route('/')
 def index():
     return render_template('dashboard.html', status=status)
@@ -134,6 +131,6 @@ def refresh():
     status['last_check'] = None
     return redirect(url_for('index'))
 
-# ── 앱 실행 ────────────────────────────────────────
+# 앱 실행
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', '3000')))
