@@ -1,68 +1,74 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <title>키보드LAB 장터 모니터</title>
-  <!-- 60초마다 페이지 자동 새로고침 -->
-  <meta http-equiv="refresh" content="60">
-  <style>
-    body{background:#1e1e2f;color:#e0e0e0;font-family:sans-serif}
-    .container{width:90%;margin:2rem auto}
-    .card{background:#2a2a3f;padding:1rem;border-radius:8px;margin-bottom:1rem}
-    .btn{display:inline-block;padding:.5rem 1rem;margin:.2rem;background:#3a3aff;color:#fff;
-         text-decoration:none;border-radius:4px}
-    .btn.red{background:#ff4a4a}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:.5rem;border-bottom:1px solid #444}
-    th{background:#30304f}
-  </style>
+    <meta charset="UTF-8">
+    <title>KBDLab Watcher</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f4f4f4; color: #333; }
+        h1 { font-size: 1.8rem; }
+        table { border-collapse: collapse; width: 100%; margin-top: 1rem; background: white; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+        a.button {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px 2px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        a.button:hover { background: #0056b3; }
+        .info { margin-top: 1rem; }
+        .warning { color: red; }
+    </style>
 </head>
 <body>
-  <div class="container">
+    <h1>⌨️ KBDLab 장터 크롤러 대시보드</h1>
 
-    <h1>키보드LAB 장터 모니터</h1>
+    <div>
+        <strong>크롤러 상태:</strong>
+        <ul>
+            <li>상태: <strong>{{ '작동 중' if status.running else '중지됨' }}</strong></li>
+            <li>마지막 확인 시간: {{ status.last_check|int|datetimeformat }}</li>
+            <li>다음 자동 로그인 예정: {{ status.next_relogin|int|datetimeformat }}</li>
+        </ul>
 
-    <div class="card">
-      <h2>모니터 상태</h2>
-      <p>현재 상태:
-        {% if status.running %}
-          <strong style="color:#4caf50">실행 중</strong>
-        {% else %}
-          <strong style="color:#f44336">중지됨</strong>
-        {% endif %}
-      </p>
-      <p>마지막 확인:
-        {% if status.last_check %}
-          {{ status.last_check|int|datetimeformat }}
-        {% else %}
-          아직 없음
-        {% endif %}
-      </p>
-      <a href="{{ url_for('start') }}"   class="btn">시작</a>
-      <a href="{{ url_for('stop') }}"    class="btn red">중지</a>
-      <a href="{{ url_for('refresh') }}" class="btn">새로고침</a>
-      <a href="{{ url_for('settings') }}"class="btn">설정</a>
+        <a class="button" href="/start">▶ 시작</a>
+        <a class="button" href="/stop">⏹ 중지</a>
+        <a class="button" href="/refresh">🔄 새로고침</a>
+        <a class="button" href="/settings">⚙️ 설정</a>
     </div>
 
-    <div class="card">
-      <h2>최신 글 목록</h2>
-      <table>
-        <thead><tr><th>순번</th><th>제목</th></tr></thead>
-        <tbody>
-          {% if status.posts %}
-            {% for post in status.posts %}
-              <tr>
-                <td>{{ loop.index }}</td>
-                <td><a href="{{ post.url }}" target="_blank" style="color:#4facff">{{ post.title }}</a></td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <tr><td colspan="2">게시물이 없습니다</td></tr>
-          {% endif %}
-        </tbody>
-      </table>
+    <div class="info">
+        <strong>설정된 정보:</strong>
+        <ul>
+            <li>아이디: {{ config.username or '(미설정)' }}</li>
+            <li>비밀번호: {{ '******' if config.password else '(미설정)' }}</li>
+            <li>웹훅: {{ config.webhook_url or '(미설정)' }}</li>
+        </ul>
     </div>
 
-  </div>
+    <h2>🆕 최신 글 목록</h2>
+    {% if status.posts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>제목</th>
+                    <th>링크</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in status.posts %}
+                <tr>
+                    <td>{{ post.title }}</td>
+                    <td><a href="{{ post.url }}" target="_blank">바로가기</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>아직 새로운 글이 없습니다.</p>
+    {% endif %}
 </body>
 </html>
