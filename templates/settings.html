@@ -1,0 +1,42 @@
+<!-- templates/settings.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <title>설정</title>
+  <style>
+    body { background:#1e1e2f; color:#e0e0e0; font-family:sans-serif; }
+    .container { width:90%; margin:2rem auto; }
+    .card { background:#2a2a3f; padding:1rem; border-radius:8px; margin-bottom:1rem; }
+    label, input { display:block; margin:0.5rem 0; }
+    input[type=text], input[type=password] {
+      width:100%; padding:0.5rem; border-radius:4px; border:none;
+    }
+    button, .btn.back {
+      padding:0.5rem 1rem; background:#3a3aff; color:#fff;
+      text-decoration:none; border:none; border-radius:4px; cursor:pointer;
+    }
+    .btn.back { background:#888; margin-left:0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 설정</h1>
+    <div class="card">
+      <form method="post">
+        <label>아이디
+          <input type="text" name="username" value="{{ config.username }}" required/>
+        </label>
+        <label>비밀번호
+          <input type="password" name="password" value="{{ config.password }}" required/>
+        </label>
+        <label>웹훅 URL
+          <input type="text" name="webhook_url" value="{{ config.webhook_url }}" required/>
+        </label>
+        <button type="submit">저장하기</button>
+        <a href="/" class="btn back">뒤로가기</a>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
